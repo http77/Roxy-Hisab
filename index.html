@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROXY | Shop Account</title>
+<style>
+:root{--blue:#083d70;--blue2:#1479c9;--pale:#eaf4ff;--ink:#132238;--line:#d5e2ef}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;color:var(--ink);background:linear-gradient(135deg,#cfe6ff,#f5faff 55%,#d7eaff);min-height:100vh}
+header{text-align:center;padding:22px 14px;color:#fff;background:linear-gradient(135deg,#062e56,#1479c9);box-shadow:0 4px 18px #00336622}
+.logo{font-size:clamp(36px,8vw,55px);font-weight:900;letter-spacing:5px}
+.tag{font-size:11px;letter-spacing:2px;margin-top:3px}
+main{max-width:800px;margin:12px auto;padding:0 10px 24px}
+.card{background:#fff;border:1px solid #d5e5f5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 6px 20px #0a477b10}
+button{border:0;border-radius:12px;background:var(--blue2);color:#fff;padding:13px 18px;font-weight:700;cursor:pointer;font-size:15px;width:100%}
+.actions button{width:auto}
+button.secondary{background:#e7f1fc;color:#164c80;border:1px solid #c6ddf3}
+button.danger{background:#b42318}
+input{font:inherit;border:1px solid #cbd9e8;border-radius:10px;padding:12px;width:100%;background:#fff;color:var(--ink);font-size:16px}
+label{display:block;font-size:14px;font-weight:700;margin:0 0 6px}
+.hidden{display:none!important}
+.center{text-align:center}
+.muted{color:#5b6f85;font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row{display:flex;flex-direction:column;gap:10px}
+@media(min-width:500px){.row{display:grid;grid-template-columns:1fr auto;align-items:end}}
+.topbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.title{margin:0 0 10px;color:#0b4f91;font-size:20px}
+
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:#edf6ff;font-size:12px}
+td input{min-width:80px;padding:10px;font-size:15px}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.totals{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.pill{background:#edf6ff;border:1px solid #d4e8fb;padding:12px;border-radius:12px;flex:1;min-width:130px}
+.pill b{display:block;font-size:18px;margin-top:4px;color:#083d70}
+.notice{font-size:13px;color:#4c6178;line-height:1.4}
+.footer{text-align:center;font-size:11px;color:#647b91;margin-top:18px}
+
+@media(max-width:650px){
+  .card{padding:12px;border-radius:14px}
+  .tablewrap table, .tablewrap thead, .tablewrap tbody, .tablewrap th, .tablewrap td, .tablewrap tr { display: block; }
+  .tablewrap thead { display: none; }
+  .tablewrap tr { background: #f8fbff; border: 1px solid #d5e2ef; border-radius: 12px; margin-bottom: 12px; padding: 12px; }
+  .tablewrap td { border: none; padding: 6px 0; display: flex; justify-content: space-between; align-items: center; }
+  .tablewrap td::before { content: attr(data-label); font-weight: bold; color: #5b6f85; font-size: 13px; width: 110px; flex-shrink: 0; }
+  .tablewrap td:last-child { justify-content: flex-end; }
+  .tablewrap td:last-child::before { display: none; }
+  .tablewrap td input { width: 100%; }
+}
+</style>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+<header><div class="logo">ROXY</div><div class="tag">SHOP ACCOUNT</div></header>
+<main>
+<section id="login" class="card center">
+  <h2 class="title">পাসওয়ার্ড দিয়ে প্রবেশ করুন</h2>
+  <div style="max-width:380px;margin:auto">
+    <label for="passwordInput">Password</label>
+    <input id="passwordInput" type="password" placeholder="পাসওয়ার্ড লিখুন" autocomplete="current-password">
+    <div class="actions" style="justify-content:center;margin-top:14px">
+      <button id="loginBtn">Enter</button>
+    </div>
+    <p id="loginError" class="notice" style="color:#b42318;margin-top:10px"></p>
+  </div>
+</section>
+
+<section id="home" class="card hidden">
+  <div class="center">
+    <h2 class="title">ROXY হিসাব</h2>
+    <p class="muted">নিচে আজকের তারিখ অটো আসবে। চাইলে পুরোনো তারিখ নির্বাচন করে সেই দিনের হিসাব খুলতে পারবেন।</p>
+  </div>
+  <div class="row" style="margin-top:16px">
+    <div>
+      <label for="accountDateInput">তারিখ নির্বাচন করুন</label>
+      <input type="date" id="accountDateInput">
+    </div>
+    <button id="createOpenBtn">Create / Open Page</button>
+  </div>
+  <p class="notice" style="margin-top:12px">আজকের তারিখ থাকলে নতুন দিনের হিসাব তৈরি হবে। আগের তারিখ বাছলে সেই দিনের সেভ করা হিসাব খুলবে।</p>
+</section>
+
+<section id="account" class="hidden">
+  <div class="card">
+    <div class="topbar">
+      <div>
+        <h2 class="title">Sales Page</h2>
+        <div id="activeDate" class="muted"></div>
+      </div>
+      <button id="homeBtn" class="secondary">Home</button>
+    </div>
+    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে সেভ হবে।</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>নং</th><th>Product Name</th><th>Sale Price (৳)</th><th>Profit (৳)</th><th>Action</th></tr></thead>
+        <tbody id="salesRows"></tbody>
+      </table>
+    </div>
+    <div class="actions" style="margin-top:12px"><button id="addSale">+ Add Product</button></div>
+    <div class="totals">
+      <div class="pill">মোট বিক্রি<b id="totalSales">৳0</b></div>
+      <div class="pill">মোট লাভ<b id="totalProfit">৳0</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="title">Due Page — বাকি হিসাব</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>নং</th><th>Customer Name</th><th>বাকি (৳)</th><th>নোট</th><th>Action</th></tr></thead>
+        <tbody id="dueRows"></tbody>
+      </table>
+    </div>
+    <div class="actions" style="margin-top:12px"><button id="addDue">+ Add Due</button></div>
+    <div class="totals">
+      <div class="pill">মোট বাকি<b id="totalDue">৳0</b></div>
+    </div>
+    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন।</p>
+  </div>
+
+  <div class="card">
+    <div class="actions" style="justify-content:space-between">
+      <button id="closeDay" class="danger">Close Page</button>
+      <span id="saveStatus" class="notice">অনলাইন সেভ চালুর অপেক্ষায়...</span>
+    </div>
+  </div>
+</section>
+
+<div class="footer">ROXY Shop Account · Firebase Cloud Connected</div>
+</main>
+
+<script>
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBysqSP2GZO8n95p--eyLnfRZmLYH32t8U",
+  authDomain: "roxy-hisab.firebaseapp.com",
+  projectId: "roxy-hisab",
+  storageBucket: "roxy-hisab.firebasestorage.app",
+  messagingSenderId: "518629748497",
+  appId: "1:518629748497:web:25fbc1fc0936be083ba6b0"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+firebase.auth().signInAnonymously().catch(err => {
+  console.error("Auth error:", err);
+});
+
+const PASSWORD = "roxy007";
+const $ = id => document.getElementById(id);
+const localDate = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+
+const dateLabel = s => {
+  if (!s) return "";
+  const [y, m, d] = s.split("-");
+  return `${d}-${m}-${y}`;
+};
+
+let currentDate = localDate();
+let currentData = { sales: [], dues: [], closed: false };
+let unsubscribe = null;
+let saveTimer = null;
+
+function money(n) {
+  return "৳" + (Number(n) || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+}
+
+function safe(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function show(id) {
+  ["login", "home", "account"].forEach(x => $(x).classList.toggle("hidden", x !== id));
+}
+
+function loadDateData(dateStr) {
+  if (unsubscribe) unsubscribe();
+  $("saveStatus").textContent = "🔄 ডাটা লোড হচ্ছে...";
+
+  unsubscribe = db.collection("accounts").doc(dateStr).onSnapshot(doc => {
+    if (doc.exists) {
+      currentData = doc.data();
+      if (!currentData.sales) currentData.sales = [];
+      if (!currentData.dues) currentData.dues = [];
+    } else {
+      currentData = { sales: [], dues: [], closed: false };
+    }
+    
+    // Jodi kono input box e user-er focus thake (likhte thake), tahole table re-render korbo na jate focus na jay
+    const activeEl = document.activeElement;
+    if (!activeEl || activeEl.tagName !== "INPUT") {
+      render();
+    } else {
+      totals();
+    }
+
+    $("saveStatus").textContent = "☁️ অনলাইনে সেভড";
+  }, err => {
+    console.error("Firestore Read Error:", err);
+    $("saveStatus").textContent = "❌ ডাটা লোড ব্যর্থ";
+  });
+}
+
+function saveToCloud() {
+  $("saveStatus").textContent = "⏳ অনলাইনে সেভ হচ্ছে...";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    db.collection("accounts").doc(currentDate).set(currentData, { merge: true })
+      .then(() => {
+        $("saveStatus").textContent = "✓ অনলাইনে সেভ হয়েছে";
+      })
+      .catch(err => {
+        console.error("Firestore Save Error:", err);
+        $("saveStatus").textContent = "❌ সেভ হয়নি!";
+      });
+  }, 400);
+}
+
+function drawRows(type) {
+  const arr = type === "sales" ? currentData.sales : currentData.dues;
+  const tb = $(type === "sales" ? "salesRows" : "dueRows");
+  tb.innerHTML = "";
+  
+  if (!arr.length) arr.push(type === "sales" ? { name: "", price: "", profit: "" } : { name: "", amount: "", note: "" });
+  
+  const salesLabels = ["নং", "Product Name", "Sale Price (৳)", "Profit (৳)", "Action"];
+  const dueLabels = ["নং", "Customer Name", "বাকি (৳)", "নোট", "Action"];
+  const labels = type === "sales" ? salesLabels : dueLabels;
+
+  arr.forEach((r, i) => {
+    const fields = type === "sales" ? ["name", "price", "profit"] : ["name", "amount", "note"];
+    const tr = document.createElement("tr");
+    
+    let html = `<td data-label="${labels[0]}">${i + 1}</td>`;
+    fields.forEach((f, idx) => {
+      const ph = type === "sales" ? (f === "name" ? "পণ্যের নাম" : f === "price" ? "বিক্রির দাম" : "লাভ") : (f === "name" ? "ক্রেতার নাম" : f === "amount" ? "বাকি টাকা" : "নোট");
+      html += `<td data-label="${labels[idx + 1]}"><input data-type="${type}" data-index="${i}" data-field="${f}" value="${safe(r[f])}" placeholder="${ph}"></td>`;
+    });
+    html += `<td data-label="${labels[4]}"><button class="secondary" data-remove="${type}" data-index="${i}" style="width:100%;padding:8px">Delete</button></td>`;
+    
+    tr.innerHTML = html;
+    tb.appendChild(tr);
+  });
+}
+
+function totals() {
+  $("totalSales").textContent = money(currentData.sales.reduce((s, x) => s + (Number(x.price) || 0), 0));
+  $("totalProfit").textContent = money(currentData.sales.reduce((s, x) => s + (Number(x.profit) || 0), 0));
+  $("totalDue").textContent = money(currentData.dues.reduce((s, x) => s + (Number(x.amount) || 0), 0));
+}
+
+function render() {
+  $("activeDate").textContent = dateLabel(currentDate);
+  drawRows("sales");
+  drawRows("dues");
+  totals();
+}
+
+function openSelected() {
+  const d = $("accountDateInput").value;
+  if (!d) { alert("একটি তারিখ নির্বাচন করুন।"); return; }
+  currentDate = d;
+  loadDateData(currentDate);
+  show("account");
+}
+
+$("loginBtn").onclick = () => {
+  if ($("passwordInput").value === PASSWORD) {
+    $("loginError").textContent = "";
+    $("accountDateInput").value = localDate();
+    show("home");
+  } else {
+    $("loginError").textContent = "পাসওয়ার্ড সঠিক নয়।";
+    $("passwordInput").value = "";
+  }
+};
+
+$("passwordInput").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+$("createOpenBtn").onclick = openSelected;
+$("homeBtn").onclick = () => { $("accountDateInput").value = localDate(); show("home"); };
+
+$("addSale").onclick = () => { 
+  currentData.sales.push({ name: "", price: "", profit: "" }); 
+  render(); 
+  saveToCloud(); 
+};
+
+$("addDue").onclick = () => { 
+  currentData.dues.push({ name: "", amount: "", note: "" }); 
+  render(); 
+  saveToCloud(); 
+};
+
+$("closeDay").onclick = () => { 
+  saveToCloud(); 
+  $("accountDateInput").value = localDate(); 
+  show("home"); 
+};
+
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (!el.matches("input[data-type]")) return;
+  const arr = el.dataset.type === "sales" ? currentData.sales : currentData.dues;
+  arr[Number(el.dataset.index)][el.dataset.field] = el.value;
+  totals();
+  saveToCloud();
+});
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-remove]");
+  if (!b) return;
+  const arr = b.dataset.remove === "sales" ? currentData.sales : currentData.dues;
+  arr.splice(Number(b.dataset.index), 1);
+  render();
+  saveToCloud();
+});
+
+$("accountDateInput").value = localDate();
+show("login");
+</script>
+</body>
+</html>

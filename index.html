@@ -17,7 +17,8 @@ button{border:0;border-radius:12px;background:var(--blue2);color:#fff;padding:13
 .actions button{width:auto}
 button.secondary{background:#e7f1fc;color:#164c80;border:1px solid #c6ddf3}
 button.danger{background:#b42318}
-input{font:inherit;border:1px solid #cbd9e8;border-radius:10px;padding:12px;width:100%;background:#fff;color:var(--ink);font-size:16px}
+input, textarea{font:inherit;border:1px solid #cbd9e8;border-radius:10px;padding:12px;width:100%;background:#fff;color:var(--ink);font-size:16px}
+textarea{resize:vertical;min-height:70px}
 label{display:block;font-size:14px;font-weight:700;margin:0 0 6px}
 .hidden{display:none!important}
 .center{text-align:center}
@@ -108,6 +109,10 @@ td input{min-width:80px;padding:10px;font-size:15px}
       <div class="pill">মোট বিক্রি<b id="totalSales">৳0</b></div>
       <div class="pill">মোট লাভ<b id="totalProfit">৳0</b></div>
     </div>
+    <div style="margin-top:14px">
+      <label for="salesNoteInput">Note / নোট</label>
+      <textarea id="salesNoteInput" placeholder="আজকের বিক্রির নোট বা মন্তব্য লিখুন..."></textarea>
+    </div>
   </div>
 
   <div class="card">
@@ -165,7 +170,7 @@ const dateLabel = s => {
 };
 
 let currentDate = localDate();
-let currentData = { sales: [], dues: [], closed: false };
+let currentData = { sales: [], dues: [], salesNote: "", closed: false };
 let unsubscribe = null;
 let saveTimer = null;
 
@@ -190,13 +195,13 @@ function loadDateData(dateStr) {
       currentData = doc.data();
       if (!currentData.sales) currentData.sales = [];
       if (!currentData.dues) currentData.dues = [];
+      if (currentData.salesNote === undefined) currentData.salesNote = "";
     } else {
-      currentData = { sales: [], dues: [], closed: false };
+      currentData = { sales: [], dues: [], salesNote: "", closed: false };
     }
     
-    // Jodi kono input box e user-er focus thake (likhte thake), tahole table re-render korbo na jate focus na jay
     const activeEl = document.activeElement;
-    if (!activeEl || activeEl.tagName !== "INPUT") {
+    if (!activeEl || (activeEl.tagName !== "INPUT" && activeEl.tagName !== "TEXTAREA")) {
       render();
     } else {
       totals();
@@ -261,6 +266,7 @@ function render() {
   $("activeDate").textContent = dateLabel(currentDate);
   drawRows("sales");
   drawRows("dues");
+  $("salesNoteInput").value = currentData.salesNote || "";
   totals();
 }
 
@@ -304,6 +310,11 @@ $("closeDay").onclick = () => {
   $("accountDateInput").value = localDate(); 
   show("home"); 
 };
+
+$("salesNoteInput").addEventListener("input", e => {
+  currentData.salesNote = e.target.value;
+  saveToCloud();
+});
 
 document.addEventListener("input", e => {
   const el = e.target;

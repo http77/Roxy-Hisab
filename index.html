@@ -76,16 +76,16 @@ td input{min-width:80px;padding:10px;font-size:15px}
 <section id="home" class="card hidden">
   <div class="center">
     <h2 class="title">ROXY হিসাব</h2>
-    <p class="muted">নিচে আজকের তারিখ অটো আসবে। চাইলে পুরোনো তারিখ নির্বাচন করে সেই দিনের হিসাব খুলতে পারবেন।</p>
+    <p class="muted">তারিখ লিখুন DD-MM-YYYY ফরম্যাটে (যেমন: 26-10-2026)।</p>
   </div>
   <div class="row" style="margin-top:16px">
     <div>
-      <label for="accountDateInput">তারিখ নির্বাচন করুন</label>
-      <input type="date" id="accountDateInput">
+      <label for="accountDateInput">তারিখ লিখুন</label>
+      <input type="text" id="accountDateInput" placeholder="DD-MM-YYYY">
     </div>
     <button id="createOpenBtn">Create / Open Page</button>
   </div>
-  <p class="notice" style="margin-top:12px">আজকের তারিখ থাকলে নতুন দিনের হিসাব তৈরি হবে। আগের তারিখ বাছলে সেই দিনের সেভ করা হিসাব খুলবে।</p>
+  <p class="notice" style="margin-top:12px">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন[cite: 2]。</p>
 </section>
 
 <section id="account" class="hidden">
@@ -97,7 +97,7 @@ td input{min-width:80px;padding:10px;font-size:15px}
       </div>
       <button id="homeBtn" class="secondary">Home</button>
     </div>
-    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে সেভ হবে।</p>
+    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখুন[cite: 2]। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে সেভ হবে[cite: 2]。</p>
     <div class="tablewrap">
       <table>
         <thead><tr><th>নং</th><th>Product Name</th><th>Sale Price (৳)</th><th>Profit (৳)</th><th>Action</th></tr></thead>
@@ -127,7 +127,7 @@ td input{min-width:80px;padding:10px;font-size:15px}
     <div class="totals">
       <div class="pill">মোট বাকি<b id="totalDue">৳0</b></div>
     </div>
-    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন।</p>
+    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন[cite: 2]。</p>
   </div>
 
   <div class="card">
@@ -161,15 +161,34 @@ firebase.auth().signInAnonymously().catch(err => {
 
 const PASSWORD = "roxy007";
 const $ = id => document.getElementById(id);
-const localDate = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 
-const dateLabel = s => {
-  if (!s) return "";
-  const [y, m, d] = s.split("-");
-  return `${d}-${m}-${y}`;
+// Local date format DD-MM-YYYY
+const localDateStr = () => { 
+  const d = new Date(); 
+  return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; 
 };
 
-let currentDate = localDate();
+// Convert DD-MM-YYYY to YYYY-MM-DD for database storage key
+const toDbKey = (s) => {
+  if (!s || !s.includes('-')) return s;
+  const parts = s.trim().split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return s;
+};
+
+// Convert YYYY-MM-DD to DD-MM-YYYY for display
+const toDisplayDate = (s) => {
+  if (!s || !s.includes('-')) return s;
+  const parts = s.trim().split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return s;
+};
+
+let currentDateKey = localDateStr(); // stores DD-MM-YYYY in UI
 let currentData = { sales: [], dues: [], salesNote: "", closed: false };
 let unsubscribe = null;
 let saveTimer = null;
@@ -190,7 +209,9 @@ function loadDateData(dateStr) {
   if (unsubscribe) unsubscribe();
   $("saveStatus").textContent = "🔄 ডাটা লোড হচ্ছে...";
 
-  unsubscribe = db.collection("accounts").doc(dateStr).onSnapshot(doc => {
+  const dbKey = toDbKey(dateStr);
+
+  unsubscribe = db.collection("accounts").doc(dbKey).onSnapshot(doc => {
     if (doc.exists) {
       currentData = doc.data();
       if (!currentData.sales) currentData.sales = [];
@@ -218,7 +239,8 @@ function saveToCloud() {
   $("saveStatus").textContent = "⏳ অনলাইনে সেভ হচ্ছে...";
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    db.collection("accounts").doc(currentDate).set(currentData, { merge: true })
+    const dbKey = toDbKey(currentDateKey);
+    db.collection("accounts").doc(dbKey).set(currentData, { merge: true })
       .then(() => {
         $("saveStatus").textContent = "✓ অনলাইনে সেভ হয়েছে";
       })
@@ -263,7 +285,7 @@ function totals() {
 }
 
 function render() {
-  $("activeDate").textContent = dateLabel(currentDate);
+  $("activeDate").textContent = currentDateKey;
   drawRows("sales");
   drawRows("dues");
   $("salesNoteInput").value = currentData.salesNote || "";
@@ -271,17 +293,17 @@ function render() {
 }
 
 function openSelected() {
-  const d = $("accountDateInput").value;
-  if (!d) { alert("একটি তারিখ নির্বাচন করুন।"); return; }
-  currentDate = d;
-  loadDateData(currentDate);
+  const val = $("accountDateInput").value.trim();
+  if (!val) { alert("অনুগ্রহ করে একটি তারিখ লিখুন (যেমন: 26-10-2026)।"); return; }
+  currentDateKey = val;
+  loadDateData(currentDateKey);
   show("account");
 }
 
 $("loginBtn").onclick = () => {
   if ($("passwordInput").value === PASSWORD) {
     $("loginError").textContent = "";
-    $("accountDateInput").value = localDate();
+    $("accountDateInput").value = localDateStr();
     show("home");
   } else {
     $("loginError").textContent = "পাসওয়ার্ড সঠিক নয়।";
@@ -291,7 +313,7 @@ $("loginBtn").onclick = () => {
 
 $("passwordInput").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
 $("createOpenBtn").onclick = openSelected;
-$("homeBtn").onclick = () => { $("accountDateInput").value = localDate(); show("home"); };
+$("homeBtn").onclick = () => { $("accountDateInput").value = localDateStr(); show("home"); };
 
 $("addSale").onclick = () => { 
   currentData.sales.push({ name: "", price: "", profit: "" }); 
@@ -307,7 +329,7 @@ $("addDue").onclick = () => {
 
 $("closeDay").onclick = () => { 
   saveToCloud(); 
-  $("accountDateInput").value = localDate(); 
+  $("accountDateInput").value = localDateStr(); 
   show("home"); 
 };
 
@@ -334,7 +356,7 @@ document.addEventListener("click", e => {
   saveToCloud();
 });
 
-$("accountDateInput").value = localDate();
+$("accountDateInput").value = localDateStr();
 show("login");
 </script>
 </body>

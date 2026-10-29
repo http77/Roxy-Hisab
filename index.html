@@ -5,59 +5,221 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ROXY | Shop Account</title>
 <style>
-:root{--blue:#0369a1;--blue2:#0284c7;--sky:#e0f2fe;--ink:#0f172a;--line:rgba(255,255,255,0.5)}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;color:var(--ink);background:linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);min-height:100vh;background-attachment:fixed}
-header{text-align:center;padding:22px 14px;color:#fff;background:rgba(2, 132, 199, 0.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(255, 255, 255, 0.4);box-shadow:0 4px 20px rgba(2, 132, 199, 0.2)}
-.logo{font-size:clamp(36px,8vw,55px);font-weight:900;letter-spacing:5px;text-shadow:0 2px 10px rgba(0,0,0,0.15)}
-.tag{font-size:11px;letter-spacing:2px;margin-top:3px;opacity:0.9}
-main{max-width:800px;margin:16px auto;padding:0 12px 24px}
-.card{background:rgba(255,255,255,0.45);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.7);border-radius:20px;padding:20px;margin:16px 0;box-shadow:0 8px 32px 0 rgba(14, 116, 144, 0.12)}
-button{border:0;border-radius:14px;background:linear-gradient(135deg, #0284c7, #0369a1);color:#fff;padding:13px 18px;font-weight:700;cursor:pointer;font-size:15px;width:100%;box-shadow:0 4px 14px rgba(2, 132, 199, 0.3);transition:transform 0.15s, box-shadow 0.15s}
-button:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(2, 132, 199, 0.4)}
-.actions button{width:auto}
-button.secondary{background:rgba(255,255,255,0.6);color:#0369a1;border:1px solid rgba(2, 132, 199, 0.3);box-shadow:0 2px 8px rgba(0,0,0,0.05)}
-button.danger{background:linear-gradient(135deg, #ef4444, #dc2626);box-shadow:0 4px 14px rgba(220,38,38,0.3)}
-input, textarea{font:inherit;border:1px solid rgba(2, 132, 199, 0.25);border-radius:12px;padding:12px;width:100%;background:rgba(255,255,255,0.7);color:var(--ink);font-size:16px;backdrop-filter:blur(8px)}
-input:focus, textarea:focus{outline:none;border-color:#0284c7;box-shadow:0 0 0 3px rgba(2, 132, 199, 0.2)}
-textarea{resize:vertical;min-height:70px}
-label{display:block;font-size:14px;font-weight:700;margin:0 0 6px;color:#0369a1}
-.hidden{display:none!important}
-.center{text-align:center}
-.muted{color:#334155;font-size:13px}
-.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.row{display:flex;flex-direction:column;gap:10px}
-@media(min-width:500px){.row{display:grid;grid-template-columns:1fr auto;align-items:end}}
-.topbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-.title{margin:0 0 10px;color:#0369a1;font-size:20px;font-weight:800}
+:root {
+  --sky-primary: #1e90ff;
+  --sky-light: rgba(255, 255, 255, 0.45);
+  --sky-card: rgba(255, 255, 255, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --text-main: #0c2d48;
+  --text-muted: #2d527c;
+  --danger: #d93838;
+}
 
-/* Glassy Stats Grid on Home Page */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:12px;margin-top:18px}
-.stat-card{background:rgba(255, 255, 255, 0.55);border:1px solid rgba(255, 255, 255, 0.8);border-radius:16px;padding:14px;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,0.04);backdrop-filter:blur(10px)}
-.stat-card .stat-label{font-size:12px;font-weight:700;color:#0369a1;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
-.stat-card .stat-val{font-size:18px;font-weight:900;color:#0f172a}
+* { box-sizing: border-box; }
 
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:10px 8px;text-align:left;border-bottom:1px solid rgba(2, 132, 199, 0.15)}
-th{background:rgba(224, 242, 254, 0.6);font-size:12px;color:#0369a1;border-radius:6px}
-td input{min-width:80px;padding:10px;font-size:15px}
-.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.totals{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-.pill{background:rgba(255, 255, 255, 0.6);border:1px solid rgba(255, 255, 255, 0.8);padding:12px;border-radius:14px;flex:1;min-width:130px;backdrop-filter:blur(10px)}
-.pill b{display:block;font-size:18px;margin-top:4px;color:#0284c7}
-.notice{font-size:13px;color:#334155;line-height:1.4}
-.footer{text-align:center;font-size:11px;color:#0369a1;margin-top:20px;font-weight:600}
+body {
+  margin: 0;
+  font-family: Arial, "Noto Sans Bengali", sans-serif;
+  color: var(--text-main);
+  background: linear-gradient(135deg, #87ceeb 0%, #b0e0e6 40%, #e0f6ff 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
 
-@media(max-width:650px){
-  .card{padding:14px;border-radius:16px}
+header {
+  text-align: center;
+  padding: 22px 14px;
+  color: #003366;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 20px rgba(0, 105, 148, 0.15);
+}
+
+.logo {
+  font-size: clamp(36px, 8vw, 55px);
+  font-weight: 900;
+  letter-spacing: 5px;
+  color: #083d70;
+  text-shadow: 0 2px 10px rgba(255, 255, 255, 0.8);
+}
+
+.tag {
+  font-size: 11px;
+  letter-spacing: 2px;
+  margin-top: 3px;
+  color: #145da0;
+  font-weight: bold;
+}
+
+main {
+  max-width: 800px;
+  margin: 12px auto;
+  padding: 0 10px 24px;
+}
+
+.card {
+  background: var(--sky-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 18px;
+  margin: 14px 0;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+}
+
+button {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0077be, #00a8e8);
+  color: #fff;
+  padding: 13px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 15px;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 119, 190, 0.25);
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.actions button { width: auto; }
+
+button.secondary {
+  background: rgba(255, 255, 255, 0.6);
+  color: #0b4f91;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+button.danger {
+  background: var(--danger);
+  box-shadow: 0 4px 15px rgba(217, 56, 56, 0.25);
+}
+
+.input-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mic-btn {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border);
+  color: #083d70;
+  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.mic-btn.listening {
+  background: #ff4d4d;
+  color: #fff;
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+input, textarea {
+  font: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  color: var(--text-main);
+  font-size: 16px;
+  outline: none;
+}
+
+input:focus, textarea:focus {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #0077be;
+}
+
+textarea { resize: vertical; min-height: 70px; }
+label { display: block; font-size: 14px; font-weight: 700; margin: 0 0 6px; color: #0b4f91; }
+.hidden { display: none !important; }
+.center { text-align: center; }
+.muted { color: var(--text-muted); font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.row { display: flex; flex-direction: column; gap: 10px; }
+@media(min-width: 500px) {
+  .row { display: grid; grid-template-columns: 1fr auto; align-items: end; }
+}
+
+.topbar { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+.title { margin: 0 0 10px; color: #063970; font-size: 20px; font-weight: 800; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.4); }
+th { background: rgba(255, 255, 255, 0.5); color: #083d70; font-size: 13px; font-weight: bold; }
+td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
+
+.tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.totals { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.pill {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  padding: 12px 14px;
+  border-radius: 14px;
+  flex: 1;
+  min-width: 130px;
+}
+.pill span { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+.pill b { display: block; font-size: 18px; margin-top: 4px; color: #004080; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.summary-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  padding: 14px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+.summary-card .label { font-size: 12px; font-weight: bold; color: #164c80; margin-bottom: 6px; }
+.summary-card .val { font-size: 20px; font-weight: 900; color: #083d70; }
+
+.notice { font-size: 13px; color: #1e4d79; line-height: 1.4; }
+.footer { text-align: center; font-size: 12px; color: #164c80; margin-top: 20px; font-weight: bold; }
+
+@media(max-width: 650px) {
+  .card { padding: 14px; border-radius: 16px; }
   .tablewrap table, .tablewrap thead, .tablewrap tbody, .tablewrap th, .tablewrap td, .tablewrap tr { display: block; }
   .tablewrap thead { display: none; }
-  .tablewrap tr { background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.7); border-radius: 14px; margin-bottom: 12px; padding: 12px; backdrop-filter:blur(8px); }
+  .tablewrap tr { background: rgba(255, 255, 255, 0.4); border: 1px solid var(--glass-border); border-radius: 14px; margin-bottom: 12px; padding: 12px; }
   .tablewrap td { border: none; padding: 6px 0; display: flex; justify-content: space-between; align-items: center; }
-  .tablewrap td::before { content: attr(data-label); font-weight: bold; color: #0369a1; font-size: 13px; width: 110px; flex-shrink: 0; }
+  .tablewrap td::before { content: attr(data-label); font-weight: bold; color: #1e4d79; font-size: 13px; width: 110px; flex-shrink: 0; }
   .tablewrap td:last-child { justify-content: flex-end; }
   .tablewrap td:last-child::before { display: none; }
-  .tablewrap td input { width: 100%; }
+  .tablewrap td .input-group { width: 100%; }
 }
 </style>
 
@@ -67,7 +229,10 @@ td input{min-width:80px;padding:10px;font-size:15px}
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
 <body>
-<header><div class="logo">ROXY</div><div class="tag">SHOP ACCOUNT</div></header>
+<header>
+  <div class="logo">ROXY</div>
+  <div class="tag">SHOP ACCOUNT</div>
+</header>
 <main>
 <section id="login" class="card center">
   <h2 class="title">পাসওয়ার্ড দিয়ে প্রবেশ করুন</h2>
@@ -77,13 +242,13 @@ td input{min-width:80px;padding:10px;font-size:15px}
     <div class="actions" style="justify-content:center;margin-top:14px">
       <button id="loginBtn">Enter</button>
     </div>
-    <p id="loginError" class="notice" style="color:#dc2626;margin-top:10px"></p>
+    <p id="loginError" class="notice" style="color:#b42318;margin-top:10px"></p>
   </div>
 </section>
 
 <section id="home" class="card hidden">
   <div class="center">
-    <h2 class="title">ROXY হিসাব</h2>
+    <h2 class="title">ROXY হিসাব Dashboard</h2>
     <p class="muted">তারিখ লিখুন DD-MM-YYYY ফরম্যাটে (যেমন: 26-10-2026)।</p>
   </div>
   <div class="row" style="margin-top:16px">
@@ -94,27 +259,27 @@ td input{min-width:80px;padding:10px;font-size:15px}
     <button id="createOpenBtn">Create / Open Page</button>
   </div>
 
-  <!-- ৪টি সামারি তথ্য প্রদর্শন বক্স (গ্লাসি লুক সহ) -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">সর্বমোট বিক্রি</div>
-      <div class="stat-val" id="homeTotalSale">৳0</div>
+  <!-- 4 Summary Boxes -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">সর্বমোট বিক্রি</div>
+      <div class="val" id="dashTotalSale">৳0</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">সর্বমোট বাকি</div>
-      <div class="stat-val" id="homeTotalDue">৳0</div>
+    <div class="summary-card">
+      <div class="label">সর্বমোট বাকি</div>
+      <div class="val" id="dashTotalDue">৳0</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">চলতি মাসের মোট বিক্রি</div>
-      <div class="stat-val" id="homeMonthSale">৳0</div>
+    <div class="summary-card">
+      <div class="label">চলতি মাসের মোট বিক্রি</div>
+      <div class="val" id="dashMonthSale">৳0</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">চলতি মাসের মোট বাকি</div>
-      <div class="stat-val" id="homeMonthDue">৳0</div>
+    <div class="summary-card">
+      <div class="label">চলতি মাসের মোট বাকি</div>
+      <div class="val" id="dashMonthDue">৳0</div>
     </div>
   </div>
 
-  <p class="notice" style="margin-top:16px">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন।</p>
+  <p class="notice" style="margin-top:14px; text-align: center;">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন。</p>
 </section>
 
 <section id="account" class="hidden">
@@ -124,9 +289,12 @@ td input{min-width:80px;padding:10px;font-size:15px}
         <h2 class="title">Sales Page</h2>
         <div id="activeDate" class="muted"></div>
       </div>
-      <button id="homeBtn" class="secondary">Home</button>
+      <div class="actions">
+        <button id="printPageBtn" class="secondary" style="background: rgba(255,255,255,0.85);">🖨️ প্রিন্ট / পেজ সেভ</button>
+        <button id="homeBtn" class="secondary">Home</button>
+      </div>
     </div>
-    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে সেভ হবে।</p>
+    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখুন অথবা মাইক্রোফোন আইকনে ক্লিক করে মুখে বলুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে সেভ হবে[cite: 2]。</p>
     <div class="tablewrap">
       <table>
         <thead><tr><th>নং</th><th>Product Name</th><th>Sale Price (৳)</th><th>Profit (৳)</th><th>Action</th></tr></thead>
@@ -135,8 +303,8 @@ td input{min-width:80px;padding:10px;font-size:15px}
     </div>
     <div class="actions" style="margin-top:12px"><button id="addSale">+ Add Product</button></div>
     <div class="totals">
-      <div class="pill">মোট বিক্রি<b id="totalSales">৳0</b></div>
-      <div class="pill">মোট লাভ<b id="totalProfit">৳0</b></div>
+      <div class="pill"><span>মোট বিক্রি</span><b id="totalSales">৳0</b></div>
+      <div class="pill"><span>মোট লাভ</span><b id="totalProfit">৳0</b></div>
     </div>
     <div style="margin-top:14px">
       <label for="salesNoteInput">Note / নোট</label>
@@ -154,20 +322,20 @@ td input{min-width:80px;padding:10px;font-size:15px}
     </div>
     <div class="actions" style="margin-top:12px"><button id="addDue">+ Add Due</button></div>
     <div class="totals">
-      <div class="pill">মোট বাকি<b id="totalDue">৳0</b></div>
+      <div class="pill"><span>মোট বাকি</span><b id="totalDue">৳0</b></div>
     </div>
-    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন।</p>
+    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন[cite: 2]。</p>
   </div>
 
   <div class="card">
-    <div class="actions" style="justify-content:space-between">
+    <div class="actions" style="justify-space-between">
       <button id="closeDay" class="danger">Close Page</button>
       <span id="saveStatus" class="notice">অনলাইন সেভ চালুর অপেক্ষায়...</span>
     </div>
   </div>
 </section>
 
-<div class="footer">ROXY Shop Account · Firebase Cloud Connected</div>
+<div class="footer">ROXY Shop Account · Glassy Blue Dashboard</div>
 </main>
 
 <script>
@@ -191,27 +359,22 @@ firebase.auth().signInAnonymously().catch(err => {
 const PASSWORD = "roxy007";
 const $ = id => document.getElementById(id);
 
-// Local date format DD-MM-YYYY
 const localDateStr = () => { 
   const d = new Date(); 
   return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`; 
 };
 
-// Convert DD-MM-YYYY to YYYY-MM-DD for database storage key
 const toDbKey = (s) => {
   if (!s || !s.includes('-')) return s;
   const parts = s.trim().split('-');
-  if (parts.length === 3) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
-  }
+  if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
   return s;
 };
 
-let currentDateKey = localDateStr(); // stores DD-MM-YYYY in UI
+let currentDateKey = localDateStr();
 let currentData = { sales: [], dues: [], salesNote: "", closed: false };
 let unsubscribe = null;
 let saveTimer = null;
-let globalStatsUnsubscribe = null;
 
 function money(n) {
   return "৳" + (Number(n) || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -223,59 +386,41 @@ function safe(s) {
 
 function show(id) {
   ["login", "home", "account"].forEach(x => $(x).classList.toggle("hidden", x !== id));
-  if (id === "home") {
-    listenHomeStats();
-  }
 }
 
-// ফায়ারবেস থেকে সকল তারিখের ডাটা রিয়েল-টাইমে প্রসেস করে ৪টি বক্সে হিসাব দেখানো
-function listenHomeStats() {
-  if (globalStatsUnsubscribe) globalStatsUnsubscribe();
-  
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
-  
-  globalStatsUnsubscribe = db.collection("accounts").onSnapshot(snapshot => {
-    let totSale = 0;
-    let totDue = 0;
-    let mSale = 0;
-    let mDue = 0;
+// Global Summary Calculation for Dashboard
+function loadDashboardSummary() {
+  db.collection("accounts").onSnapshot(snapshot => {
+    let grandTotalSale = 0;
+    let grandTotalDue = 0;
+    let currentMonthSale = 0;
+    let currentMonthDue = 0;
+
+    const now = new Date();
+    const currentYearStr = String(now.getFullYear());
+    const currentMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+    const monthPrefix = `${currentYearStr}-${currentMonthStr}`;
 
     snapshot.forEach(doc => {
-      const docId = doc.id; // YYYY-MM-DD or DD-MM-YYYY
-      const data = doc.data() || {};
-      
-      let docYear = "", docMonth = "";
-      const parts = docId.split('-');
-      if (parts.length === 3) {
-        if (parts[0].length === 4) {
-          docYear = parts[0];
-          docMonth = parts[1];
-        } else {
-          docYear = parts[2];
-          docMonth = parts[1];
-        }
-      }
+      const data = doc.data();
+      const docKey = doc.id;
 
-      const docSales = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
-      const docDues = (data.dues || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
+      const salesSum = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
+      const duesSum = (data.dues || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
 
-      totSale += docSales;
-      totDue += docDues;
+      grandTotalSale += salesSum;
+      grandTotalDue += duesSum;
 
-      if (docYear === String(currentYear) && docMonth === String(currentMonth)) {
-        mSale += docSales;
-        mDue += docDues;
+      if (docKey.startsWith(monthPrefix)) {
+        currentMonthSale += salesSum;
+        currentMonthDue += duesSum;
       }
     });
 
-    $("homeTotalSale").textContent = money(totSale);
-    $("homeTotalDue").textContent = money(totDue);
-    $("homeMonthSale").textContent = money(mSale);
-    $("homeMonthDue").textContent = money(mDue);
-  }, err => {
-    console.error("Error fetching stats:", err);
+    $("dashTotalSale").textContent = money(grandTotalSale);
+    $("dashTotalDue").textContent = money(grandTotalDue);
+    $("dashMonthSale").textContent = money(currentMonthSale);
+    $("dashMonthDue").textContent = money(currentMonthDue);
   });
 }
 
@@ -343,13 +488,68 @@ function drawRows(type) {
     let html = `<td data-label="${labels[0]}">${i + 1}</td>`;
     fields.forEach((f, idx) => {
       const ph = type === "sales" ? (f === "name" ? "পণ্যের নাম" : f === "price" ? "বিক্রির দাম" : "লাভ") : (f === "name" ? "ক্রেতার নাম" : f === "amount" ? "বাকি টাকা" : "নোট");
-      html += `<td data-label="${labels[idx + 1]}"><input data-type="${type}" data-index="${i}" data-field="${f}" value="${safe(r[f])}" placeholder="${ph}"></td>`;
+      html += `<td data-label="${labels[idx + 1]}">
+        <div class="input-group">
+          <input data-type="${type}" data-index="${i}" data-field="${f}" value="${safe(r[f])}" placeholder="${ph}">
+          <button type="button" class="mic-btn" onclick="startVoiceInput(this, '${type}', ${i}, '${f}')" title="মুখে বলুন">🎤</button>
+        </div>
+      </td>`;
     });
     html += `<td data-label="${labels[4]}"><button class="secondary" data-remove="${type}" data-index="${i}" style="width:100%;padding:8px">Delete</button></td>`;
     
     tr.innerHTML = html;
     tb.appendChild(tr);
   });
+}
+
+// Voice-to-Text Speech Recognition Handler (Updated to remove punctuation/dari)
+function startVoiceInput(btn, type, index, field) {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("আপনার ব্রাউজার ভয়েস ইনপুট সাপোর্ট করে না। দয়া করে Google Chrome ব্যবহার করুন।");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'bn-BD'; // Bengali support
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  btn.classList.add("listening");
+
+  recognition.onresult = (event) => {
+    const speechResult = event.results[0][0].transcript;
+    btn.classList.remove("listening");
+
+    // Remove dāṛi (।), comma, and punctuation marks
+    let cleanResult = speechResult.replace(/[।,\-\?\!]/g, "").trim();
+
+    // If the field is price, profit or amount, keep only numbers so totals calculate properly
+    if (field === 'price' || field === 'profit' || field === 'amount') {
+      cleanResult = cleanResult.replace(/[^0-9]/g, "");
+    }
+
+    const inputEl = btn.previousElementSibling;
+    if (inputEl) {
+      inputEl.value = cleanResult;
+      
+      const arr = type === "sales" ? currentData.sales : currentData.dues;
+      arr[index][field] = cleanResult;
+      totals();
+      saveToCloud();
+    }
+  };
+
+  recognition.onerror = () => {
+    btn.classList.remove("listening");
+    alert("ভয়েস চিনতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+  };
+
+  recognition.onend = () => {
+    btn.classList.remove("listening");
+  };
+
+  recognition.start();
 }
 
 function totals() {
@@ -374,10 +574,112 @@ function openSelected() {
   show("account");
 }
 
+// Printable Page Functionality (Supports perfect Bengali text, notes and details)
+function printOrSavePage() {
+  const printWindow = window.open('', '', 'height=800,width=900');
+  
+  const content = `
+    <!DOCTYPE html>
+    <html lang="bn">
+    <head>
+      <meta charset="utf-8">
+      <title>ROXY - দৈনিক হিসাব রিপোর্ট (${currentDateKey})</title>
+      <style>
+        body { font-family: Arial, "Noto Sans Bengali", sans-serif; padding: 20px; color: #0c2d48; line-height: 1.5; }
+        .header { text-align: center; border-bottom: 2px solid #083d70; padding-bottom: 10px; margin-bottom: 20px; }
+        .logo { font-size: 32px; font-weight: bold; color: #083d70; letter-spacing: 3px; }
+        .subtitle { font-size: 14px; color: #145da0; font-weight: bold; }
+        .date { font-size: 16px; margin-top: 5px; font-weight: bold; }
+        
+        .summary-box { display: flex; justify-content: space-between; background: #e0f6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #1e90ff; }
+        .summary-item { text-align: center; flex: 1; }
+        .summary-item label { font-size: 12px; color: #2d527c; display: block; font-weight: bold; }
+        .summary-item b { font-size: 18px; color: #083d70; }
+
+        h3 { color: #063970; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #b0e0e6; padding: 8px; text-align: left; }
+        th { background-color: #87ceeb; color: #083d70; font-size: 13px; }
+        
+        .note-box { background: #f9f9f9; border: 1px solid #ddd; padding: 10px; border-radius: 6px; margin-top: 15px; }
+        .footer { text-align: center; font-size: 11px; color: #666; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="logo">ROXY</div>
+        <div class="subtitle">SHOP ACCOUNT - দৈনিক বিক্রয় ও বাকির হিসাব</div>
+        <div class="date">তারিখ: ${currentDateKey}</div>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-item"><label>মোট বিক্রি</label><b>${$("totalSales").textContent}</b></div>
+        <div class="summary-item"><label>মোট লাভ</label><b>${$("totalProfit").textContent}</b></div>
+        <div class="summary-item"><label>মোট বাকি</label><b>${$("totalDue").textContent}</b></div>
+      </div>
+
+      <h3>১. বিক্রয় হিসাব</h3>
+      <table>
+        <thead>
+          <tr><th>নং</th><th>পণ্যের নাম</th><th>বিক্রির দাম (৳)</th><th>লাভ (৳)</th></tr>
+        </thead>
+        <tbody>
+          ${currentData.sales.map((x, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${x.name || '-'}</td>
+              <td>${x.price || 0}</td>
+              <td>${x.profit || 0}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <h3>২. বাকি হিসাব</h3>
+      <table>
+        <thead>
+          <tr><th>নং</th><th>ক্রেতার নাম</th><th>বাকি (৳)</th><th>নোট</th></tr>
+        </thead>
+        <tbody>
+          ${currentData.dues.map((x, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${x.name || '-'}</td>
+              <td>${x.amount || 0}</td>
+              <td>${x.note || '-'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      ${currentData.salesNote ? `
+        <div class="note-box">
+          <strong>বিশেষ নোট:</strong><br>${currentData.salesNote}
+        </div>
+      ` : ''}
+
+      <div class="footer">
+        ROXY Shop Account · প্রিন্ট ও সেভ ডেট: ${new Date().toLocaleString('bn-BD')}
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(content);
+  printWindow.document.close();
+}
+
 $("loginBtn").onclick = () => {
   if ($("passwordInput").value === PASSWORD) {
     $("loginError").textContent = "";
     $("accountDateInput").value = localDateStr();
+    loadDashboardSummary();
     show("home");
   } else {
     $("loginError").textContent = "পাসওয়ার্ড সঠিক নয়।";
@@ -388,6 +690,7 @@ $("loginBtn").onclick = () => {
 $("passwordInput").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
 $("createOpenBtn").onclick = openSelected;
 $("homeBtn").onclick = () => { $("accountDateInput").value = localDateStr(); show("home"); };
+$("printPageBtn").onclick = printOrSavePage;
 
 $("addSale").onclick = () => { 
   currentData.sales.push({ name: "", price: "", profit: "" }); 
@@ -434,4 +737,4 @@ $("accountDateInput").value = localDateStr();
 show("login");
 </script>
 </body>
-</html>
+</html>s

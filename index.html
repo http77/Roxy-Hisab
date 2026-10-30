@@ -108,35 +108,6 @@ button.danger {
   align-items: center;
 }
 
-.mic-btn {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid var(--glass-border);
-  color: #083d70;
-  border-radius: 10px;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  flex-shrink: 0;
-  box-shadow: none;
-}
-
-.mic-btn.listening {
-  background: #ff4d4d;
-  color: #fff;
-  animation: pulse 1.2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
 input, textarea {
   font: inherit;
   border: 1px solid rgba(255, 255, 255, 0.8);
@@ -279,7 +250,7 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
     </div>
   </div>
 
-  <p class="notice" style="margin-top:14px; text-align: center;">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন。</p>
+  <p class="notice" style="margin-top:14px; text-align: center;">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন[cite: 3]。</p>
 </section>
 
 <section id="account" class="hidden">
@@ -294,7 +265,9 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
         <button id="homeBtn" class="secondary">Home</button>
       </div>
     </div>
-    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখুন অথবা মাইক্রোফোন আইকনে ক্লিক করে মুখে বলুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে সেভ হবে[cite: 2]。</p>
+
+    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখে হিসাব করুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে অনলাইনে সেভ হবে[cite: 2, 3]。</p>
+    
     <div class="tablewrap">
       <table>
         <thead><tr><th>নং</th><th>Product Name</th><th>Sale Price (৳)</th><th>Profit (৳)</th><th>Action</th></tr></thead>
@@ -324,7 +297,7 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
     <div class="totals">
       <div class="pill"><span>মোট বাকি</span><b id="totalDue">৳0</b></div>
     </div>
-    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন[cite: 2]。</p>
+    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন[cite: 2, 3]。</p>
   </div>
 
   <div class="card">
@@ -491,7 +464,6 @@ function drawRows(type) {
       html += `<td data-label="${labels[idx + 1]}">
         <div class="input-group">
           <input data-type="${type}" data-index="${i}" data-field="${f}" value="${safe(r[f])}" placeholder="${ph}">
-          <button type="button" class="mic-btn" onclick="startVoiceInput(this, '${type}', ${i}, '${f}')" title="মুখে বলুন">🎤</button>
         </div>
       </td>`;
     });
@@ -500,56 +472,6 @@ function drawRows(type) {
     tr.innerHTML = html;
     tb.appendChild(tr);
   });
-}
-
-// Voice-to-Text Speech Recognition Handler (Updated to remove punctuation/dari)
-function startVoiceInput(btn, type, index, field) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert("আপনার ব্রাউজার ভয়েস ইনপুট সাপোর্ট করে না। দয়া করে Google Chrome ব্যবহার করুন।");
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = 'bn-BD'; // Bengali support
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  btn.classList.add("listening");
-
-  recognition.onresult = (event) => {
-    const speechResult = event.results[0][0].transcript;
-    btn.classList.remove("listening");
-
-    // Remove dāṛi (।), comma, and punctuation marks
-    let cleanResult = speechResult.replace(/[।,\-\?\!]/g, "").trim();
-
-    // If the field is price, profit or amount, keep only numbers so totals calculate properly
-    if (field === 'price' || field === 'profit' || field === 'amount') {
-      cleanResult = cleanResult.replace(/[^0-9]/g, "");
-    }
-
-    const inputEl = btn.previousElementSibling;
-    if (inputEl) {
-      inputEl.value = cleanResult;
-      
-      const arr = type === "sales" ? currentData.sales : currentData.dues;
-      arr[index][field] = cleanResult;
-      totals();
-      saveToCloud();
-    }
-  };
-
-  recognition.onerror = () => {
-    btn.classList.remove("listening");
-    alert("ভয়েস চিনতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-  };
-
-  recognition.onend = () => {
-    btn.classList.remove("listening");
-  };
-
-  recognition.start();
 }
 
 function totals() {
@@ -574,7 +496,7 @@ function openSelected() {
   show("account");
 }
 
-// Printable Page Functionality (Supports perfect Bengali text, notes and details)
+// Printable Page Functionality
 function printOrSavePage() {
   const printWindow = window.open('', '', 'height=800,width=900');
   
@@ -663,9 +585,7 @@ function printOrSavePage() {
       </div>
 
       <script>
-        window.onload = function() {
-          window.print();
-        };
+        window.onload = function() { window.print(); };
       <\/script>
     </body>
     </html>
@@ -737,4 +657,4 @@ $("accountDateInput").value = localDateStr();
 show("login");
 </script>
 </body>
-</html>s
+</html>

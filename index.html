@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>ROXY | Shop Account</title>
 <style>
 :root {
@@ -102,31 +102,6 @@ button.danger {
   box-shadow: 0 4px 15px rgba(217, 56, 56, 0.25);
 }
 
-.scan-box {
-  background: linear-gradient(135deg, rgba(0, 119, 190, 0.15), rgba(0, 168, 232, 0.25));
-  border: 2px dashed #0077be;
-  border-radius: 16px;
-  padding: 12px;
-  margin-bottom: 14px;
-  text-align: center;
-}
-
-.scan-btn-label {
-  background: linear-gradient(135deg, #0077be, #00a8e8);
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 10px 18px;
-  border-radius: 25px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 119, 190, 0.3);
-  margin-top: 6px;
-}
-
 .input-group {
   display: flex;
   gap: 6px;
@@ -169,7 +144,7 @@ label { display: block; font-size: 14px; font-weight: 700; margin: 0 0 6px; colo
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.4); }
 th { background: rgba(255, 255, 255, 0.5); color: #083d70; font-size: 13px; font-weight: bold; }
-td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
+td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
 
 .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
@@ -223,9 +198,6 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-
-<!-- Standalone Browser OCR Engine (No API Key Required) -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 <header>
@@ -275,9 +247,13 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
       <div class="label">চলতি মাসের মোট বাকি</div>
       <div class="val" id="dashMonthDue">৳0</div>
     </div>
+    <div class="summary-card">
+      <div class="label">টোটাল ক্যাশ আছে</div>
+      <div class="val" id="dashTotalCash">৳0</div>
+    </div>
   </div>
 
-  <p class="notice" style="margin-top:14px; text-align: center;">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন。</p>
+  <p class="notice" style="margin-top:14px; text-align: center;">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন[cite: 3]。</p>
 </section>
 
 <section id="account" class="hidden">
@@ -293,18 +269,19 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
       </div>
     </div>
 
-    <!-- Sales Browser-based Local OCR Scan Box -->
-    <div class="scan-box">
-      <div style="font-weight: bold; color: #083d70; font-size: 14px;">⚡ খাতার ছবি অটো স্ক্যানার</div>
-      <div class="muted" style="margin-top: 2px;">খাতার ছবি থেকে বাংলা ও ইংরেজি এন্ট্রি পড়ে অটোমেটিক টেবিলের ঘর ফিলাপ করবে।</div>
-      <label class="scan-btn-label">
-        📸 খাতার ছবি তুলুন বা আপলোড করুন
-        <input type="file" accept="image/*" id="salesImageInput" onchange="scanImageLocally(this, 'sales')" style="display:none">
-      </label>
-      <div id="salesScanStatus" class="notice" style="margin-top: 6px; font-weight: bold; color: #0077be;"></div>
+    <!-- Cash & Expense Inputs -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0;">
+      <div>
+        <label for="openingCashInput">আজকের ক্যাশ (শুরুতে)</label>
+        <input type="number" id="openingCashInput" placeholder="টাকার পরিমাণ লিখুন">
+      </div>
+      <div>
+        <label for="expenseInput">আজকের খরচ</label>
+        <input type="number" id="expenseInput" placeholder="খরচের পরিমাণ লিখুন">
+      </div>
     </div>
 
-    <p class="notice">পণ্যের নাম, বিক্রির দাম ও লাভ লিখে হিসাব করুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে অনলাইনে সেভ হবে。</p>
+    <p class="notice" style="margin-top: 10px;">পণ্যের নাম, বিক্রির দাম ও লাভ লিখে হিসাব করুন। প্রতিটি পরিবর্তন স্বয়ংক্রিয়ভাবে অনলাইনে সেভ হবে[cite: 2, 3]。</p>
     
     <div class="tablewrap">
       <table>
@@ -326,17 +303,6 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
   <div class="card">
     <h2 class="title">Due Page — বাকি হিসাব</h2>
 
-    <!-- Due Scan Box -->
-    <div class="scan-box">
-      <div style="font-weight: bold; color: #083d70; font-size: 14px;">⚡ বাকির ছবি স্ক্যানার</div>
-      <div class="muted" style="margin-top: 2px;">খাতার ছবি থেকে কাস্টমারের নাম ও বাকির পরিমাণ স্ক্যান করবে।</div>
-      <label class="scan-btn-label">
-        📸 বাকির ছবি আপলোড করুন
-        <input type="file" accept="image/*" id="dueImageInput" onchange="scanImageLocally(this, 'dues')" style="display:none">
-      </label>
-      <div id="dueScanStatus" class="notice" style="margin-top: 6px; font-weight: bold; color: #0077be;"></div>
-    </div>
-
     <div class="tablewrap">
       <table>
         <thead><tr><th>নং</th><th>Customer Name</th><th>বাকি (৳)</th><th>নোট</th><th>Action</th></tr></thead>
@@ -347,7 +313,7 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 15px; }
     <div class="totals">
       <div class="pill"><span>মোট বাকি</span><b id="totalDue">৳0</b></div>
     </div>
-    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন。</p>
+    <p class="notice">কেউ বাকি টাকা পরিশোধ করলে Delete বাটনে চাপ দিয়ে এন্ট্রি মুছে দিতে পারবেন[cite: 2, 3]。</p>
   </div>
 
   <div class="card">
@@ -379,7 +345,7 @@ firebase.auth().signInAnonymously().catch(err => {
   console.error("Auth error:", err);
 });
 
-const PASSWORD = "roxy007";
+const PASSWORD = "roxy71";
 const $ = id => document.getElementById(id);
 
 const localDateStr = () => { 
@@ -395,7 +361,7 @@ const toDbKey = (s) => {
 };
 
 let currentDateKey = localDateStr();
-let currentData = { sales: [], dues: [], salesNote: "", closed: false };
+let currentData = { sales: [], dues: [], salesNote: "", openingCash: 0, expense: 0, closed: false };
 let unsubscribe = null;
 let saveTimer = null;
 
@@ -417,6 +383,7 @@ function loadDashboardSummary() {
     let grandTotalDue = 0;
     let currentMonthSale = 0;
     let currentMonthDue = 0;
+    let grandTotalCash = 0;
 
     const now = new Date();
     const currentYearStr = String(now.getFullYear());
@@ -429,9 +396,14 @@ function loadDashboardSummary() {
 
       const salesSum = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
       const duesSum = (data.dues || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
+      const openCash = Number(data.openingCash) || 0;
+      const expense = Number(data.expense) || 0;
+
+      const dayCash = openCash + salesSum - expense;
 
       grandTotalSale += salesSum;
       grandTotalDue += duesSum;
+      grandTotalCash += dayCash;
 
       if (docKey.startsWith(monthPrefix)) {
         currentMonthSale += salesSum;
@@ -443,6 +415,7 @@ function loadDashboardSummary() {
     $("dashTotalDue").textContent = money(grandTotalDue);
     $("dashMonthSale").textContent = money(currentMonthSale);
     $("dashMonthDue").textContent = money(currentMonthDue);
+    $("dashTotalCash").textContent = money(grandTotalCash);
   });
 }
 
@@ -458,8 +431,10 @@ function loadDateData(dateStr) {
       if (!currentData.sales) currentData.sales = [];
       if (!currentData.dues) currentData.dues = [];
       if (currentData.salesNote === undefined) currentData.salesNote = "";
+      if (currentData.openingCash === undefined) currentData.openingCash = 0;
+      if (currentData.expense === undefined) currentData.expense = 0;
     } else {
-      currentData = { sales: [], dues: [], salesNote: "", closed: false };
+      currentData = { sales: [], dues: [], salesNote: "", openingCash: 0, expense: 0, closed: false };
     }
     
     const activeEl = document.activeElement;
@@ -523,91 +498,6 @@ function drawRows(type) {
   });
 }
 
-function convertDigitsToEnglish(str) {
-  const bnDigits = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
-  return str.replace(/[০-৯]/g, match => bnDigits[match]);
-}
-
-// BROWSER LOCAL OCR ENGINE SYSTEM
-async function scanImageLocally(inputEl, type) {
-  const file = inputEl.files[0];
-  if (!file) return;
-
-  const statusEl = $(type === "sales" ? "salesScanStatus" : "dueScanStatus");
-  statusEl.textContent = "⚡ প্রসেসিং হচ্ছে... কিছুক্ষণ অপেক্ষা করুন।";
-
-  try {
-    const worker = await Tesseract.createWorker(['ben', 'eng']);
-    const ret = await worker.recognize(file);
-    await worker.terminate();
-
-    const fullText = ret.data.text;
-    if (!fullText || !fullText.trim()) {
-      statusEl.textContent = "⚠️ ছবি থেকে কোনো তথ্য উদ্ধার করা যায়নি।";
-      return;
-    }
-
-    const lines = fullText.split('\n');
-    let count = 0;
-
-    lines.forEach(line => {
-      const cleanLine = convertDigitsToEnglish(line.trim());
-      if (!cleanLine) return;
-
-      const numbers = cleanLine.match(/\d+/g);
-
-      if (type === "sales") {
-        if (numbers && numbers.length > 0) {
-          const price = numbers[0];
-          const profit = numbers[1] || "";
-          let name = cleanLine.replace(/\d+/g, "").replace(/[=\-\|]/g, "").trim();
-
-          if (currentData.sales.length === 1 && !currentData.sales[0].name && !currentData.sales[0].price) {
-            currentData.sales = [];
-          }
-
-          currentData.sales.push({
-            name: name || "সামগ্রী",
-            price: price,
-            profit: profit
-          });
-          count++;
-        }
-      } else if (type === "dues") {
-        if (numbers && numbers.length > 0) {
-          const amount = numbers[0];
-          let name = cleanLine.replace(/\d+/g, "").replace(/[=\-\|]/g, "").trim();
-
-          if (currentData.dues.length === 1 && !currentData.dues[0].name && !currentData.dues[0].amount) {
-            currentData.dues = [];
-          }
-
-          currentData.dues.push({
-            name: name || "ক্রেতা",
-            amount: amount,
-            note: ""
-          });
-          count++;
-        }
-      }
-    });
-
-    if (count > 0) {
-      render();
-      saveToCloud();
-      statusEl.textContent = `✓ সফলভাবে ${count}টি ডাটা যুক্ত করা হয়েছে!`;
-    } else {
-      statusEl.textContent = "⚠️ ডাটা পড়ার চেষ্টা করা হয়েছে, আবার চেষ্টা করে দেখুন।";
-    }
-
-    inputEl.value = "";
-  } catch (err) {
-    console.error("Local OCR Error:", err);
-    statusEl.textContent = "❌ স্ক্যানিং স্কিপ করা হয়েছে।";
-    inputEl.value = "";
-  }
-}
-
 function totals() {
   $("totalSales").textContent = money(currentData.sales.reduce((s, x) => s + (Number(x.price) || 0), 0));
   $("totalProfit").textContent = money(currentData.sales.reduce((s, x) => s + (Number(x.profit) || 0), 0));
@@ -619,6 +509,8 @@ function render() {
   drawRows("sales");
   drawRows("dues");
   $("salesNoteInput").value = currentData.salesNote || "";
+  $("openingCashInput").value = currentData.openingCash || "";
+  $("expenseInput").value = currentData.expense || "";
   totals();
 }
 
@@ -765,6 +657,16 @@ $("closeDay").onclick = () => {
 
 $("salesNoteInput").addEventListener("input", e => {
   currentData.salesNote = e.target.value;
+  saveToCloud();
+});
+
+$("openingCashInput").addEventListener("input", e => {
+  currentData.openingCash = Number(e.target.value) || 0;
+  saveToCloud();
+});
+
+$("expenseInput").addEventListener("input", e => {
+  currentData.expense = Number(e.target.value) || 0;
   saveToCloud();
 });
 

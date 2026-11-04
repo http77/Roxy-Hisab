@@ -181,6 +181,36 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
 .notice { font-size: 13px; color: #1e4d79; line-height: 1.4; }
 .footer { text-align: center; font-size: 12px; color: #164c80; margin-top: 20px; font-weight: bold; }
 
+/* Modal styles for Master Due List */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+}
+.modal-card {
+  background: #f0f6ff;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  width: 100%;
+  max-width: 650px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.modal-body {
+  overflow-y: auto;
+  margin-top: 10px;
+  flex: 1;
+}
+
 @media(max-width: 650px) {
   .card { padding: 14px; border-radius: 16px; }
   .tablewrap table, .tablewrap thead, .tablewrap tbody, .tablewrap th, .tablewrap td, .tablewrap tr { display: block; }
@@ -230,6 +260,11 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
     <button id="createOpenBtn">Create / Open Page</button>
   </div>
 
+  <!-- বাকি লিস্ট দেখার বাটন -->
+  <div style="margin-top: 16px;">
+    <button id="openMasterDueBtn" class="secondary" style="background: rgba(255, 255, 255, 0.8); color: #083d70; font-weight: bold;">📋 বাকি লিস্ট দেখুন (Master Due List)</button>
+  </div>
+
   <div class="summary-grid">
     <div class="summary-card">
       <div class="label">সর্বমোট বিক্রি</div>
@@ -261,6 +296,35 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
 
   <p class="notice" style="margin-top:14px; text-align: center;">আজকের তারিখ নিজে লিখেও ওপেন করতে পারেন অথবা পুরোনো তারিখ দিয়ে সেই দিনের হিসাব খুলতে পারবেন[cite: 3]。</p>
 </section>
+
+<!-- MASTER DUE LIST MODAL -->
+<div id="masterDueModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="topbar">
+      <h3 class="title" style="margin:0;">সকল কাস্টমারের বাকি লিস্ট</h3>
+      <button id="closeModalBtn" class="secondary" style="width: auto; padding: 6px 14px;">✖ বন্ধ করুন</button>
+    </div>
+    <div style="margin-top: 12px;">
+      <input type="text" id="modalSearchInput" placeholder="🔍 কাস্টমার বা তারিখ দিয়ে খুঁজুন..." oninput="renderMasterDueList()">
+    </div>
+    <div class="modal-body tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>তারিখ</th>
+            <th>ক্রেতার নাম</th>
+            <th>বাকি (৳)</th>
+            <th>নোট</th>
+            <th>অ্যাকশন</th>
+          </tr>
+        </thead>
+        <tbody id="masterDueTableBody">
+          <!-- ডাইনামিক বাকি লিস্ট লোড হবে -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <section id="account" class="hidden">
   <div class="card">
@@ -366,7 +430,6 @@ const toDbKey = (s) => {
   return s;
 };
 
-// ডাটাবেজ ফরম্যাট (YYYY-MM-DD) থেকে সাধারণ ইউজার ফরম্যাটে (DD-MM-YYYY) রূপান্তর
 const toUserKey = (s) => {
   if (!s || !s.includes('-')) return s;
   const parts = s.trim().split('-');
@@ -376,7 +439,7 @@ const toUserKey = (s) => {
 
 let currentDateKey = localDateStr();
 let currentData = { sales: [], dues: [], salesNote: "", openingCash: 0, expense: 0, closed: false, boxAmount: 0 };
-let allAccountsData = {}; // সমস্ত তারিখের ডাটা ক্যাশ রাখার জন্য
+let allAccountsData = {}; 
 let unsubscribe = null;
 let saveTimer = null;
 
@@ -408,7 +471,7 @@ function loadDashboardSummary() {
 
     snapshot.forEach(doc => {
       const data = doc.data();
-      const docKey = doc.id; // এটি ফায়ারবেসের doc id (যেমন: 2026-10-26 বা পুরোনো ফরম্যাট)
+      const docKey = doc.id; 
       allAccountsData[docKey] = data;
 
       const salesSum = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
@@ -433,7 +496,6 @@ function loadDashboardSummary() {
     $("dashMonthSale").textContent = money(currentMonthSale);
     $("dashMonthDue").textContent = money(currentMonthDue);
 
-    // বর্তমান সিলেক্টেড তারিখের বক্সের অ্যামাউন্ট ড্যাশবোর্ডে আপডেট করা
     updateDashboardCashDisplay(grandTotalCash);
   });
 }
@@ -454,7 +516,6 @@ function updateDashboardCashDisplay(grandTotalCash) {
 }
 
 function onHomeDateChange() {
-  // হোম পেজে তারিখ পরিবর্তন করলে ড্যাশবোর্ডের "বক্সে আছে" ইনপুট ফিল্ড ও ক্যাশ আপডেট হবে
   db.collection("accounts").get().then(snapshot => {
     let grandTotalCash = 0;
     snapshot.forEach(doc => {
@@ -466,6 +527,74 @@ function onHomeDateChange() {
     });
     updateDashboardCashDisplay(grandTotalCash);
   });
+}
+
+// Master Due List রেন্ডার ও সার্চ করার ফাংশন
+function renderMasterDueList() {
+  const query = $("modalSearchInput").value.trim().toLowerCase();
+  const tb = $("masterDueTableBody");
+  tb.innerHTML = "";
+
+  let totalDuesCount = 0;
+
+  Object.keys(allAccountsData).forEach(dbKey => {
+    const data = allAccountsData[dbKey];
+    const displayDate = toUserKey(dbKey);
+    const dues = data.dues || [];
+
+    dues.forEach((dueItem, index) => {
+      const customerName = String(dueItem.name || "").toLowerCase();
+      const customerNote = String(dueItem.note || "").toLowerCase();
+      const dateStr = String(displayDate).toLowerCase();
+
+      if (!query || customerName.includes(query) || dateStr.includes(query) || customerNote.includes(query)) {
+        totalDuesCount++;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td data-label="তারিখ">${displayDate}</td>
+          <td data-label="ক্রেতার নাম"><input type="text" value="${safe(dueItem.name)}" oninput="updateMasterDue('${dbKey}', ${index}, 'name', this.value)" style="padding:6px; font-size:14px;"></td>
+          <td data-label="বাকি (৳)"><input type="number" value="${dueItem.amount || 0}" oninput="updateMasterDue('${dbKey}', ${index}, 'amount', this.value)" style="padding:6px; font-size:14px; width:90px;"></td>
+          <td data-label="নোট"><input type="text" value="${safe(dueItem.note)}" oninput="updateMasterDue('${dbKey}', ${index}, 'note', this.value)" style="padding:6px; font-size:14px;"></td>
+          <td data-label="অ্যাকশন"><button class="danger" onclick="deleteMasterDue('${dbKey}', ${index})" style="padding:6px 12px; font-size:13px; width:auto;">ডিলিট</button></td>
+        `;
+        tb.appendChild(tr);
+      }
+    });
+  });
+
+  if (totalDuesCount === 0) {
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#2d527c; padding:20px;">কোনো বাকি এন্ট্রি পাওয়া যায়নি।</td></tr>`;
+  }
+}
+
+// মাস্টার লিস্ট থেকে সরাসরি বাকি আপডেট করা
+function updateMasterDue(dbKey, index, field, value) {
+  if (allAccountsData[dbKey] && allAccountsData[dbKey].dues && allAccountsData[dbKey].dues[index]) {
+    allAccountsData[dbKey].dues[index][field] = (field === 'amount') ? (Number(value) || 0) : value;
+    
+    // ফায়ারবেসে সাথে সাথে সেভ করা
+    db.collection("accounts").doc(dbKey).set(allAccountsData[dbKey], { merge: true })
+      .then(() => {
+        loadDashboardSummary();
+      })
+      .catch(err => console.error("Update error:", err));
+  }
+}
+
+// মাস্টার লিস্ট থেকে বাকি এন্ট্রি ডিলিট করা
+function deleteMasterDue(dbKey, index) {
+  if (confirm("আপনি কি নিশ্চিত এই বাকি এন্ট্রিটি মুছে ফেলতে চান?")) {
+    if (allAccountsData[dbKey] && allAccountsData[dbKey].dues) {
+      allAccountsData[dbKey].dues.splice(index, 1);
+      
+      db.collection("accounts").doc(dbKey).set(allAccountsData[dbKey], { merge: true })
+        .then(() => {
+          renderMasterDueList();
+          loadDashboardSummary();
+        })
+        .catch(err => console.error("Delete error:", err));
+    }
+  }
 }
 
 function loadDateData(dateStr) {
@@ -686,6 +815,15 @@ $("loginBtn").onclick = () => {
   }
 };
 
+// Modal Control Events
+$("openMasterDueBtn").onclick = () => {
+  renderMasterDueList();
+  $("masterDueModal").style.display = "flex";
+};
+$("closeModalBtn").onclick = () => {
+  $("masterDueModal").style.display = "none";
+};
+
 $("passwordInput").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
 $("createOpenBtn").onclick = openSelected;
 $("homeBtn").onclick = () => { $("accountDateInput").value = localDateStr(); loadDashboardSummary(); show("home"); };
@@ -728,7 +866,6 @@ $("expenseInput").addEventListener("input", e => {
 $("boxAmountInput").addEventListener("input", e => {
   currentData.boxAmount = Number(e.target.value) || 0;
   
-  // সরাসরি রিয়েল-টাইমে ক্যাশ বক্স আপডেট করার জন্য
   db.collection("accounts").get().then(snapshot => {
     let grandTotalCash = 0;
     snapshot.forEach(doc => {

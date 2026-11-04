@@ -225,7 +225,7 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
   <div class="row" style="margin-top:16px">
     <div>
       <label for="accountDateInput">তারিখ লিখুন</label>
-      <input type="text" id="accountDateInput" placeholder="DD-MM-YYYY">
+      <input type="text" id="accountDateInput" placeholder="DD-MM-YYYY" onchange="onHomeDateChange()">
     </div>
     <button id="createOpenBtn">Create / Open Page</button>
   </div>
@@ -250,6 +250,12 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
     <div class="summary-card">
       <div class="label">টোটাল ক্যাশ আছে</div>
       <div class="val" id="dashTotalCash">৳0</div>
+    </div>
+    <div class="summary-card" style="background: rgba(255, 235, 235, 0.7);">
+      <div class="label">বক্সে আছে</div>
+      <div class="val" style="margin-top: 4px;">
+        <input type="number" id="boxAmountInput" placeholder="অ্যামাউন্ট লিখুন" style="font-size: 16px; padding: 6px 10px; border-radius: 8px; border: 1px solid #ffb3b3;">
+      </div>
     </div>
   </div>
 
@@ -360,8 +366,17 @@ const toDbKey = (s) => {
   return s;
 };
 
+// ডাটাবেজ ফরম্যাট (YYYY-MM-DD) থেকে সাধারণ ইউজার ফরম্যাটে (DD-MM-YYYY) রূপান্তর
+const toUserKey = (s) => {
+  if (!s || !s.includes('-')) return s;
+  const parts = s.trim().split('-');
+  if (parts.length === 3 && parts[0].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  return s;
+};
+
 let currentDateKey = localDateStr();
-let currentData = { sales: [], dues: [], salesNote: "", openingCash: 0, expense: 0, closed: false };
+let currentData = { sales: [], dues: [], salesNote: "", openingCash: 0, expense: 0, closed: false, boxAmount: 0 };
+let allAccountsData = {}; // সমস্ত তারিখের ডাটা ক্যাশ রাখার জন্য
 let unsubscribe = null;
 let saveTimer = null;
 
@@ -379,6 +394,7 @@ function show(id) {
 
 function loadDashboardSummary() {
   db.collection("accounts").onSnapshot(snapshot => {
+    allAccountsData = {};
     let grandTotalSale = 0;
     let grandTotalDue = 0;
     let currentMonthSale = 0;
@@ -392,7 +408,8 @@ function loadDashboardSummary() {
 
     snapshot.forEach(doc => {
       const data = doc.data();
-      const docKey = doc.id;
+      const docKey = doc.id; // এটি ফায়ারবেসের doc id (যেমন: 2026-10-26 বা পুরোনো ফরম্যাট)
+      allAccountsData[docKey] = data;
 
       const salesSum = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
       const duesSum = (data.dues || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
@@ -415,7 +432,39 @@ function loadDashboardSummary() {
     $("dashTotalDue").textContent = money(grandTotalDue);
     $("dashMonthSale").textContent = money(currentMonthSale);
     $("dashMonthDue").textContent = money(currentMonthDue);
-    $("dashTotalCash").textContent = money(grandTotalCash);
+
+    // বর্তমান সিলেক্টেড তারিখের বক্সের অ্যামাউন্ট ড্যাশবোর্ডে আপডেট করা
+    updateDashboardCashDisplay(grandTotalCash);
+  });
+}
+
+function updateDashboardCashDisplay(grandTotalCash) {
+  const selectedDateStr = $("accountDateInput").value.trim() || currentDateKey;
+  const dbKey = toDbKey(selectedDateStr);
+  const targetData = allAccountsData[dbKey] || {};
+  
+  const currentBoxInputVal = Number(targetData.boxAmount) || 0;
+  
+  if (document.activeElement !== $("boxAmountInput")) {
+    $("boxAmountInput").value = currentBoxInputVal || "";
+  }
+
+  const finalDisplayCash = grandTotalCash - currentBoxInputVal;
+  $("dashTotalCash").textContent = money(finalDisplayCash >= 0 ? finalDisplayCash : 0);
+}
+
+function onHomeDateChange() {
+  // হোম পেজে তারিখ পরিবর্তন করলে ড্যাশবোর্ডের "বক্সে আছে" ইনপুট ফিল্ড ও ক্যাশ আপডেট হবে
+  db.collection("accounts").get().then(snapshot => {
+    let grandTotalCash = 0;
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const salesSum = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
+      const openCash = Number(data.openingCash) || 0;
+      const expense = Number(data.expense) || 0;
+      grandTotalCash += (openCash + salesSum - expense);
+    });
+    updateDashboardCashDisplay(grandTotalCash);
   });
 }
 
@@ -433,10 +482,13 @@ function loadDateData(dateStr) {
       if (currentData.salesNote === undefined) currentData.salesNote = "";
       if (currentData.openingCash === undefined) currentData.openingCash = 0;
       if (currentData.expense === undefined) currentData.expense = 0;
+      if (currentData.boxAmount === undefined) currentData.boxAmount = 0;
     } else {
-      currentData = { sales: [], dues: [], salesNote: "", openingCash: 0, expense: 0, closed: false };
+      currentData = { sales: [], dues: [], salesNote: "", openingCash: 0, expense: 0, closed: false, boxAmount: 0 };
     }
     
+    $("boxAmountInput").value = currentData.boxAmount || "";
+
     const activeEl = document.activeElement;
     if (!activeEl || (activeEl.tagName !== "INPUT" && activeEl.tagName !== "TEXTAREA")) {
       render();
@@ -511,6 +563,7 @@ function render() {
   $("salesNoteInput").value = currentData.salesNote || "";
   $("openingCashInput").value = currentData.openingCash || "";
   $("expenseInput").value = currentData.expense || "";
+  $("boxAmountInput").value = currentData.boxAmount || "";
   totals();
 }
 
@@ -625,6 +678,7 @@ $("loginBtn").onclick = () => {
     $("loginError").textContent = "";
     $("accountDateInput").value = localDateStr();
     loadDashboardSummary();
+    loadDateData(localDateStr());
     show("home");
   } else {
     $("loginError").textContent = "পাসওয়ার্ড সঠিক নয়।";
@@ -634,7 +688,7 @@ $("loginBtn").onclick = () => {
 
 $("passwordInput").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
 $("createOpenBtn").onclick = openSelected;
-$("homeBtn").onclick = () => { $("accountDateInput").value = localDateStr(); show("home"); };
+$("homeBtn").onclick = () => { $("accountDateInput").value = localDateStr(); loadDashboardSummary(); show("home"); };
 $("printPageBtn").onclick = printOrSavePage;
 
 $("addSale").onclick = () => { 
@@ -652,6 +706,7 @@ $("addDue").onclick = () => {
 $("closeDay").onclick = () => { 
   saveToCloud(); 
   $("accountDateInput").value = localDateStr(); 
+  loadDashboardSummary();
   show("home"); 
 };
 
@@ -667,6 +722,25 @@ $("openingCashInput").addEventListener("input", e => {
 
 $("expenseInput").addEventListener("input", e => {
   currentData.expense = Number(e.target.value) || 0;
+  saveToCloud();
+});
+
+$("boxAmountInput").addEventListener("input", e => {
+  currentData.boxAmount = Number(e.target.value) || 0;
+  
+  // সরাসরি রিয়েল-টাইমে ক্যাশ বক্স আপডেট করার জন্য
+  db.collection("accounts").get().then(snapshot => {
+    let grandTotalCash = 0;
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const salesSum = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
+      const openCash = Number(data.openingCash) || 0;
+      const expense = Number(data.expense) || 0;
+      grandTotalCash += (openCash + salesSum - expense);
+    });
+    updateDashboardCashDisplay(grandTotalCash);
+  });
+
   saveToCloud();
 });
 

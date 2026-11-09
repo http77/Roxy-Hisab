@@ -250,7 +250,7 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
 <section id="home" class="card hidden">
   <div class="center">
     <h2 class="title">ROXY হিসাব Dashboard</h2>
-    <p class="muted">তারিখ লিখুন DD-MM-YYYY ফরম্যাটে (যেমন: 26-10-2026)।</p>
+    <p class="muted">তারিখ লিখুন DD-MM-YYYY ফরম্যাটে (যেমন: 26-10-2026)।[cite: 3]</p>
   </div>
   <div class="row" style="margin-top:16px">
     <div>
@@ -269,6 +269,14 @@ td .input-group input { min-width: 70px; padding: 8px; font-size: 16px; }
     <div class="summary-card">
       <div class="label">সর্বমোট বিক্রি</div>
       <div class="val" id="dashTotalSale">৳0</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">সর্বমোট লাভ</div>
+      <div class="val" id="dashTotalProfit">৳0</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">চলতি মাসের মোট লাভ</div>
+      <div class="val" id="dashMonthProfit">৳0</div>
     </div>
     <div class="summary-card">
       <div class="label">সর্বমোট বাকি</div>
@@ -459,8 +467,10 @@ function loadDashboardSummary() {
   db.collection("accounts").onSnapshot(snapshot => {
     allAccountsData = {};
     let grandTotalSale = 0;
+    let grandTotalProfit = 0;
     let grandTotalDue = 0;
     let currentMonthSale = 0;
+    let currentMonthProfit = 0;
     let currentMonthDue = 0;
     let grandTotalCash = 0;
 
@@ -475,6 +485,7 @@ function loadDashboardSummary() {
       allAccountsData[docKey] = data;
 
       const salesSum = (data.sales || []).reduce((s, x) => s + (Number(x.price) || 0), 0);
+      const profitSum = (data.sales || []).reduce((s, x) => s + (Number(x.profit) || 0), 0);
       const duesSum = (data.dues || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
       const openCash = Number(data.openingCash) || 0;
       const expense = Number(data.expense) || 0;
@@ -482,16 +493,20 @@ function loadDashboardSummary() {
       const dayCash = openCash + salesSum - expense;
 
       grandTotalSale += salesSum;
+      grandTotalProfit += profitSum;
       grandTotalDue += duesSum;
       grandTotalCash += dayCash;
 
       if (docKey.startsWith(monthPrefix)) {
         currentMonthSale += salesSum;
+        currentMonthProfit += profitSum;
         currentMonthDue += duesSum;
       }
     });
 
     $("dashTotalSale").textContent = money(grandTotalSale);
+    $("dashTotalProfit").textContent = money(grandTotalProfit);
+    $("dashMonthProfit").textContent = money(currentMonthProfit);
     $("dashTotalDue").textContent = money(grandTotalDue);
     $("dashMonthSale").textContent = money(currentMonthSale);
     $("dashMonthDue").textContent = money(currentMonthDue);
@@ -572,7 +587,6 @@ function updateMasterDue(dbKey, index, field, value) {
   if (allAccountsData[dbKey] && allAccountsData[dbKey].dues && allAccountsData[dbKey].dues[index]) {
     allAccountsData[dbKey].dues[index][field] = (field === 'amount') ? (Number(value) || 0) : value;
     
-    // ফায়ারবেসে সাথে সাথে সেভ করা
     db.collection("accounts").doc(dbKey).set(allAccountsData[dbKey], { merge: true })
       .then(() => {
         loadDashboardSummary();
